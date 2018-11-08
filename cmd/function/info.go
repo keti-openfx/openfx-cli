@@ -1,10 +1,10 @@
 package function
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/keti-openfx/openfx-cli/api/grpc"
+	"github.com/keti-openfx/openfx-cli/config"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -21,7 +21,6 @@ type FunctionInfo struct {
 
 func init() {
 	infoCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
-	infoCmd.Flags().StringVarP(&gateway, "gateway", "g", "localhost:31113", "Gateway URL to store in YAML config file")
 }
 
 var infoCmd = &cobra.Command{
@@ -49,24 +48,12 @@ var infoCmd = &cobra.Command{
 }
 
 func preRunInfo(cmd *cobra.Command, args []string) error {
-	if cmd.Flag("config").Value.String() != "" {
-		if err := parseConfigFile(); err != nil {
-			return err
-		}
-		if fxServices.Openfx.FxGatewayURL != "" {
-			gateway = fxServices.Openfx.FxGatewayURL
-		}
-	}
+	gateway = config.GetFxGatewayURL(gateway, "")
 
 	return nil
 }
 
 func runInfo() error {
-
-	if gateway == "" {
-		return errors.New("please provide a gateway url")
-	}
-
 	fnInfo, err := grpc.GetMeta(functionName, gateway)
 	if err != nil {
 		return err

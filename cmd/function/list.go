@@ -1,8 +1,8 @@
 package function
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/keti-openfx/openfx-cli/api/grpc"
 	"github.com/keti-openfx/openfx-cli/config"
@@ -11,7 +11,6 @@ import (
 
 func init() {
 	listCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
-	listCmd.Flags().StringVarP(&gateway, "gateway", "g", "localhost:31113", "Gateway URL to store in YAML config file")
 }
 
 var listCmd = &cobra.Command{
@@ -46,29 +45,45 @@ func preRunList(cmd *cobra.Command, args []string) error {
 }
 
 func runList() error {
-
-	if gateway == "" {
-		return errors.New("please provide a gateway url")
-	}
-
 	fnList, err := grpc.List(gateway)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%-15s\t%-20s\t%-10s\t%-10s\t%-10s\n", "Function", "Image", "Invocations", "Replicas", "Status")
+	fmt.Printf("%-15s\t%-20s\t%-15s\t%-10s\t%-10s\t%-10s\t%-40s\n", "Function", "Image", "Maintainer", "Invocations", "Replicas", "Status", "Description")
 	for _, fn := range fnList.Functions {
-		fnImage := fn.Image
+
+		if fxServices != nil {
+			if _, ok := fxServices.Functions[fn.Name]; !ok {
+				continue
+			}
+		}
+
+		fnImage := strings.Replace(fn.Image, config.DefaultRegistry, "$(repo)", 1)
 		if len(fnImage) > 30 {
 			fnImage = fnImage[0:28] + ".."
 		}
-		fmt.Printf("%-15s\t%-20s\t%-10d\t%-10d\t", fn.Name, fnImage, fn.InvocationCount, fn.Replicas)
+
+		var fnMaintainer, fnDesc, fnStatus string
+		if v, ok := fn.Annotations["maintainer"]; ok {
+			fnMaintainer = v
+		}
+
+		if v, ok := fn.Annotations["desc"]; ok {
+			fnDesc = v
+			if len(fnDesc) > 40 {
+				fnDesc = fnDesc[0:38] + ".."
+			}
+		}
 
 		if fn.AvailableReplicas == 0 {
-			fmt.Printf("%-10s\n", "Not Ready")
+			fnStatus = "Not Ready"
 		} else {
-			fmt.Printf("%-10s\n", "Ready")
+			fnStatus = "Ready"
 		}
+
+		fmt.Printf("%-15s\t%-20s\t%-15s\t%-10d\t%-10d\t%-10s\t%-40s\n", fn.Name, fnImage, fnMaintainer, fn.InvocationCount, fn.Replicas, fnStatus, fnDesc)
+
 	}
 
 	return nil

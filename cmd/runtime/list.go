@@ -38,7 +38,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("Supported Runtimes are:")
+	fmt.Printf("Supported Runtimes are:\n")
 
 	for name, runtime := range runtimes.Runtimes {
 		runtime.Name = name
