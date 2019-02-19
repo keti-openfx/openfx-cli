@@ -22,7 +22,6 @@ func init() {
 	initCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
 	initCmd.Flags().StringVarP(&runtimeName, "runtime", "r", "", "Runtime(Language) to use")
 	initCmd.Flags().StringVarP(&handlerDir, "dir", "d", "", "Directory containing handler file")
-
 	initCmd.MarkFlagRequired("runtime")
 }
 
@@ -31,11 +30,11 @@ var initCmd = &cobra.Command{
   openfx init <FUNCTION_NAME> -r <RUNTIME> [-f <APPEND_EXISTING_YAML_FILE>] [-g <FX_GATEWAY_ADDRESS>]`,
 	Short: "Prepare a OpenFx function",
 	Long: `
-	The init command creates a new function template based upon hello-world in the given runtime.
+	The init command creates a new function template based upon hello-world in the given runtime. When user execute init command, config file, runtime directory, and directory with function name are created. Also, in directory with function name, there is handler file and user can modify this file later. 
 `,
-	Example: `  openfx init echo --runtime go
-  openfx init read-write -f ./config.yml -r python
-  openfx init read-write --config ./config.yml --runtime java --gateway localhost:31113
+	Example: `  openfx-cli function init echo --runtime go
+  openfx-cli function init read-write -f ./config.yml -r python
+  openfx function init read-write --config ./config.yml --runtime java --gateway localhost:31113
                   `,
 	PreRunE: preRunInit,
 	RunE:    runInit,
@@ -111,7 +110,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if handlerDir == "" {
-		handlerDir = "./" + functionName
+		handlerDir = "/src"
 	}
 
 	fxServices.Functions[functionName] = config.Function{
@@ -127,10 +126,10 @@ func runInit(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	fmt.Printf("Function handler created in folder: %s\n", functionName)
-	fmt.Printf("Rewrite the function handler code in %s folder\n", functionName)
+	fmt.Printf("Function handler created in folder: %s\n", functionName+"/src")
+	fmt.Printf("Rewrite the function handler code in %s folder\n", functionName+"/src")
 
-	confWriteErr := ioutil.WriteFile("./"+configFile, confYaml, 0600)
+	confWriteErr := ioutil.WriteFile("./"+functionName+"/"+configFile, confYaml, 0600)
 	if confWriteErr != nil {
 		return fmt.Errorf("error writing config file %s", confWriteErr)
 	}
