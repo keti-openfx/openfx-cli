@@ -41,7 +41,7 @@ func BuildImage(image string, handler string, functionName string, runtime strin
 
 	buildCmd := []string{"docker", "build"}
 	buildCmd = append(buildCmd, flagSlice...)
-	buildCmd = append(buildCmd, "-t", image, ".")
+	buildCmd = append(buildCmd, "-t", image, "../")
 
 	var err error
 	var result string
