@@ -110,7 +110,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	}
 
 	if handlerDir == "" {
-		handlerDir = "/src"
+		handlerDir = "./src"
 	}
 
 	fxServices.Functions[functionName] = config.Function{
