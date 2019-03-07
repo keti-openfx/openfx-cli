@@ -3,8 +3,8 @@
 #
 
 Ji-Woo Kang <jiwoodidy@keti.re.kr>
-Siwon Kim <ksw19627@keti.re.kr>
 Youngyoon Choi <cyy03576@keti.re.kr>
+Siwon Kim <ksw19627@keti.re.kr>
 Donghyun Hwang <dhhwang89@keti.re.kr>
 Dongmin Kim <dmkim@keti.re.kr / csdmkim@gmail.com>
 Taegyeong Kim <taegyeong76@keti.re.kr>
