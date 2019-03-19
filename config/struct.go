@@ -43,6 +43,9 @@ type Function struct {
 	// Handler to use for function
 	Handler Handler `yaml:"handler"`
 
+	// Doker private registry
+	RegistryURL string `yaml:"docker_registry"`
+
 	// Image Docker image name
 	Image string `yaml:"image"`
 
@@ -54,7 +57,7 @@ type Function struct {
 	// Secrets list of secrets to be made available to function
 	Secrets []string `yaml:"secrets,omitempty"`
 
-	SkipBuild bool `yaml:"skip_build,omitempty"`
+	//SkipBuild bool `yaml:"skip_build,omitempty"`
 
 	Constraints *[]string `yaml:"constraints,omitempty"`
 

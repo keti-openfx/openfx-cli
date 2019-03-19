@@ -33,9 +33,9 @@ var initCmd = &cobra.Command{
 	The init command creates a new function template based upon hello-world in the given runtime. When user execute init command, config file, runtime directory, and directory with function name are created. Also, in directory with function name, there is handler file and user can modify this file later. 
 `,
 	Example: `  openfx-cli function init echo --runtime go
-  openfx-cli function init read-write -f ./config.yml -r python
-  openfx function init read-write --config ./config.yml --runtime java --gateway localhost:31113
-                  `,
+  openfx-cli function init read-write -f ./config.yml -r python3
+  openfx-cli function init read-write --config ./config.yml --runtime java --gateway localhost:31113
+  `,
 	PreRunE: preRunInit,
 	RunE:    runInit,
 }
@@ -116,6 +116,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 	fxServices.Functions[functionName] = config.Function{
 		Runtime:      runtimeName,
 		Handler:      config.Handler{Dir: handlerDir, Name: r.Handler.Name, File: r.Handler.File},
+		RegistryURL:  config.DefaultRegistry,
 		Image:        config.DefaultRegistry + "/" + functionName,
 		BuildArgs:    r.BuildArgs,
 		BuildOptions: r.BuildPackages,

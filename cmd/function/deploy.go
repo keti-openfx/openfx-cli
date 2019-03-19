@@ -3,6 +3,7 @@ package function
 import (
 	"errors"
 	"fmt"
+	yml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 
@@ -15,17 +16,18 @@ import (
 )
 
 var (
-	replace bool
-	update  bool
-	logs    bool
+	replace       bool
+	update        bool
+	deployVerbose bool
+	registry      string
 )
 
 func init() {
 	deployCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
-
+	deployCmd.Flags().StringVarP(&registry, "registry", "", "", "Docker private registry url")
 	deployCmd.Flags().BoolVar(&replace, "replace", false, "Remove and re-create existing function(s)")
 	deployCmd.Flags().BoolVar(&update, "update", false, "Perform rolling update on existing function(s)")
-	deployCmd.Flags().BoolVarP(&logs, "logs", "l", false, "Print function build log")
+	deployCmd.Flags().BoolVarP(&deployVerbose, "deployverbose", "v", false, "Print function build log")
 	deployCmd.MarkFlagRequired("config")
 }
 
@@ -33,18 +35,29 @@ var deployCmd = &cobra.Command{
 	Use:   `deploy -f <YAML_CONIFIG_FILE>`,
 	Short: "Deploy  OpenFx functions",
 	Long: `
-	Push OpenFx function Image & Deploy OpenFx function containers via the supplied YAML config using the "-f" flag
+	Push OpenFx function Image & Deploy OpenFx function containers via the supplied YAML config using the "-f" flag. Also write docker private registry using the "--registry" flag to push docker image into registry.
 	`,
 	Example: `  
 	openfx-cli function deploy -f config.yml
   	openfx-cli function deploy -f ./config.yml --replace=false --update=true
-	openfx-cli function deploy -f config.yml --logs
+	openfx-cli function deploy -f config.yml -v
+	openfx-cli function deploy -f config.yml --registry 10.0.0.100:5000
+	openfx-cli function deploy -f config.yml -g 10.0.0.180:31113
         `,
 	PreRunE: preRunDeploy,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := runDeploy(); err != nil {
-			fmt.Println(err.Error())
+		var validate string
+		fmt.Print("Is docker registry(default: 10.0.0.180:5000) correct ? [y/n] ")
+		fmt.Scanln(&validate)
+
+		if validate == "y" {
+			if err := runDeploy(); err != nil {
+				fmt.Println(err.Error())
+			}
+		} else {
+			log.Fatal("Please provide proper docker private registry\n")
 		}
+
 		return
 	},
 }
@@ -71,6 +84,7 @@ func preRunDeploy(cmd *cobra.Command, args []string) error {
 }
 
 func deploy(gw string, function config.Function, update, replace bool) error {
+
 	//function.Secrets
 	//sendRegistryAuth
 	//EnvVar
@@ -125,29 +139,101 @@ func runDeploy() error {
 	for name, function := range fxServices.Functions {
 		function.Name = name
 
-		//PUSH
-		if function.SkipBuild {
-			log.Print("Skipping push: %s\n", function.Name)
+		//Docker private registry
+		if len(registry) > 0 {
+			result, err := builder.RenameImage(function.Image, registry, function.Name)
+			if err != nil {
+				log.Print(result)
+				return err
+			}
+
+			result, err = builder.RemoveOldImage(function.Image)
+			if err != nil {
+				log.Print(result)
+				return err
+			}
+
+			function.Image = registry + "/" + function.Name
+			function.RegistryURL = registry
+			/*
+				confYaml, err := ioutil.ReadFile("config.yaml")
+				if err != nil {
+					log.Fatal("%v\n", err)
+				}
+
+				UnmarshalErr := yml.Unmarshal(confYaml, &fxServices)
+				if UnmarshalErr != nil {
+					log.Fatal("%v\n", UnmarshalErr)
+				}
+
+				fxServices.Functions[function.Name] = config.Function{
+					Runtime:     function.Runtime,
+					Description: function.Description,
+					Maintainer:  function.Maintainer,
+					Handler:     config.Handler{Dir: function.Handler.Dir, Name: function.Handler.Name, File: function.Handler.File},
+					RegistryURL: function.RegistryURL,
+					Image:       function.Image,
+				}
+
+				newconfYaml, newconfYamlErr := yml.Marshal(&fxServices)
+				if newconfYamlErr != nil {
+					log.Fatal("%v\n", newconfYamlErr)
+				}
+
+				newcofWriteErr := ioutil.WriteFile(configFile, new, 0600)
+				if newcofWriteErr != nil {
+					log.Fatal("%v\n", newcofWriteErr)
+				}
+			*/
+		}
+
+		log.Info("Pushing: %s, Image: %s in Registry: %s ...\n", function.Name, function.Image, function.RegistryURL)
+		if deployVerbose {
+			err := builder.ExecCommandPipe("./", []string{"docker", "push", function.Image}, os.Stdout, os.Stderr)
+			if err != nil {
+				return err
+			}
 		} else {
-			log.Info("Pushing: %s, Image:%s\n", function.Name, function.Image)
-			if logs {
-				err := builder.ExecCommandPipe("./", []string{"docker", "push", function.Image}, os.Stdout, os.Stderr)
-				if err != nil {
-					return err
-				}
-			} else {
-				_, err := builder.ExecCommand("./", []string{"docker", "push", function.Image})
-				if err != nil {
-					return err
-				}
+			_, err := builder.ExecCommand("./", []string{"docker", "push", function.Image})
+			if err != nil {
+				return err
 			}
 		}
 
-		log.Info("Deploying: %s\n", function.Name)
+		log.Info("Deploying: %s ...\n", function.Name)
 
 		//DEPLOY
 		if err := deploy(gateway, function, update, replace); err != nil {
 			return err
+		}
+
+		confYaml, err := ioutil.ReadFile("config.yaml")
+		if err != nil {
+			log.Fatal("%v\n", err)
+		}
+
+		UnmarshalErr := yml.Unmarshal(confYaml, &fxServices)
+		if UnmarshalErr != nil {
+			log.Fatal("%v\n", UnmarshalErr)
+		}
+
+		fxServices.Functions[function.Name] = config.Function{
+			Runtime:     function.Runtime,
+			Description: function.Description,
+			Maintainer:  function.Maintainer,
+			Handler:     config.Handler{Dir: function.Handler.Dir, Name: function.Handler.Name, File: function.Handler.File},
+			RegistryURL: function.RegistryURL,
+			Image:       function.Image,
+		}
+
+		newconfYaml, newconfYamlErr := yml.Marshal(&fxServices)
+		if newconfYamlErr != nil {
+			log.Fatal("%v\n", newconfYamlErr)
+		}
+
+		newcofWriteErr := ioutil.WriteFile(configFile, newconfYaml, 0600)
+		if newcofWriteErr != nil {
+			log.Fatal("%v\n", newcofWriteErr)
 		}
 
 		log.Info("http trigger url: http://%s/function/%s \n", gateway, function.Name)

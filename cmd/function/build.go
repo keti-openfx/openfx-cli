@@ -12,14 +12,14 @@ import (
 )
 
 var (
-	noCache bool
-	verbose bool
+	noCache      bool
+	buildVerbose bool
 )
 
 func init() {
 	buildCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
 	buildCmd.Flags().BoolVar(&noCache, "nocache", false, "Do not use cache when building runtime image")
-	buildCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Print function build log")
+	buildCmd.Flags().BoolVarP(&buildVerbose, "buildverbose", "v", false, "Print function build log")
 	buildCmd.MarkFlagRequired("config")
 }
 
@@ -32,6 +32,7 @@ var buildCmd = &cobra.Command{
 	Example: `
 	openfx-cli function build -f config.yaml
 	openfx-cli function build -f ./config.yaml
+	openfx-cli function build -f config.yaml -v
 	`,
 	PreRunE: preRunBuild,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -43,19 +44,14 @@ var buildCmd = &cobra.Command{
 }
 
 func preRunBuild(cmd *cobra.Command, args []string) error {
-	//var configURL string
-
 	if configFile == "" {
-		e := fmt.Sprintf("please provide a '-f' flag for function build\n")
+		e := fmt.Sprintf("please provide a '-f' flag to read config file for function build\n")
 		return errors.New(e)
 	} else {
 		if err := parseConfigFile(); err != nil {
 			return err
 		}
-		//configURL = fxServices.Openfx.FxGatewayURL
 	}
-
-	gateway = config.GetFxGatewayURL(gateway, "")
 
 	return nil
 }
@@ -74,7 +70,7 @@ func build(nocache, verbose bool, function config.Function) error {
 		buildArgs["handler_name"] = function.Handler.Name
 	}
 
-	result, err := builder.BuildImage(function.Image, function.Handler.Dir, function.Name, function.Runtime, nocache, buildArgs, function.BuildOptions, verbose)
+	result, err := builder.BuildImage(function.Image, function.Handler.Dir, function.Name, function.RegistryURL, function.Runtime, nocache, buildArgs, function.BuildOptions, verbose)
 	if err != nil {
 		log.Print(result)
 		return err
@@ -92,13 +88,14 @@ func runBuild() error {
 		function.Name = name
 
 		//BUILD
-		if function.SkipBuild {
-			log.Print("Skipping build: %s\n", function.Name)
-		} else {
-			log.Info("Building: %s, Image: %s\n", function.Name, function.Image)
-			if err := build(noCache, verbose, function); err != nil {
-				return err
-			}
+		/*
+			if function.SkipBuild {
+				log.Print("Skipping build: %s\n", function.Name)
+			}*/
+
+		log.Info("Building function (%s) image...\n", function.Name)
+		if err := build(noCache, buildVerbose, function); err != nil {
+			return err
 		}
 	}
 

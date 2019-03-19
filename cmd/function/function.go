@@ -29,7 +29,7 @@ var FunctionCmd = &cobra.Command{
 func init() {
 	FunctionCmd.AddCommand(initCmd)
 	FunctionCmd.AddCommand(buildCmd)
-	//FunctionCmd.AddCommand(runCmd)
+	FunctionCmd.AddCommand(runCmd)
 	FunctionCmd.AddCommand(deployCmd)
 	FunctionCmd.AddCommand(deleteCmd)
 	FunctionCmd.AddCommand(listCmd)

@@ -19,8 +19,8 @@ var listCmd = &cobra.Command{
 	Long: `
 	Lists OpenFx function
 `,
-	Example: `  openfx function list -f config.yml
-	openfx funtion list -g localhost:31113
+	Example: `  openfx-cli function list -f config.yml
+	openfx-cli funtion list -g localhost:31113
                   `,
 	PreRunE: preRunList,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -58,8 +58,13 @@ func runList() error {
 				continue
 			}
 		}
+		var fnImage string
+		if fn.Image != config.DefaultRegistry+"/"+fn.Name {
+			fnImage = strings.Replace(fn.Image, strings.Split(fn.Image, "/")[0], "$(repo)", 1)
+		} else {
+			fnImage = strings.Replace(fn.Image, config.DefaultRegistry, "$(repo)", 1)
+		}
 
-		fnImage := strings.Replace(fn.Image, config.DefaultRegistry, "$(repo)", 1)
 		if len(fnImage) > 30 {
 			fnImage = fnImage[0:28] + ".."
 		}

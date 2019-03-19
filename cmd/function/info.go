@@ -29,8 +29,8 @@ var infoCmd = &cobra.Command{
 	Long: `
 	Display OpenFX function information
 `,
-	Example: `  openfx function info -f config.yml
-	openfx function info -g localhost:31113
+	Example: `  openfx-cli function info -f config.yml
+	openfx-cli function info -g localhost:31113
                   `,
 	PreRunE: preRunInfo,
 	RunE: func(cmd *cobra.Command, args []string) error {

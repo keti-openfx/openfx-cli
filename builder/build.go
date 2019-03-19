@@ -7,11 +7,9 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/keti-openfx/openfx-cli/config"
 )
 
-func BuildImage(image string, handler string, functionName string, runtime string, nocache bool, buildArgMap map[string]string, buildOptions []string, verbose bool) (string, error) {
+func BuildImage(image string, handler string, functionName string, registry string, runtime string, nocache bool, buildArgMap map[string]string, buildOptions []string, verbose bool) (string, error) {
 
 	//Handler Path
 	if _, err := os.Stat(handler); err != nil {
@@ -26,7 +24,7 @@ func BuildImage(image string, handler string, functionName string, runtime strin
 	}
 
 	var flagSlice []string
-	flagSlice = append(flagSlice, "--build-arg", fmt.Sprintf("%s=%s", "REGISTRY", config.DefaultRegistry))
+	flagSlice = append(flagSlice, "--build-arg", fmt.Sprintf("%s=%s", "REGISTRY", registry))
 	for k, v := range buildArgMap {
 		flagSlice = append(flagSlice, "--build-arg", fmt.Sprintf("%s=%s", k, v))
 	}
@@ -54,8 +52,7 @@ func BuildImage(image string, handler string, functionName string, runtime strin
 			return result, err
 		}
 	}
-
-	fmt.Printf("Image: %s built.\n", image)
+	fmt.Printf("Image: %s built in local environment.\n", image)
 	return result, nil
 
 }

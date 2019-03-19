@@ -17,7 +17,7 @@ var logCmd = &cobra.Command{
 	Long: `
 	Display Openfx function logs
 `,
-	Example: `  openfx function log resizeImg
+	Example: `  openfx-cli function log resizeImg
 `,
 	PreRunE: preRunLog,
 	RunE: func(cmd *cobra.Command, args []string) error {

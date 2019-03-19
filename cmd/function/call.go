@@ -22,8 +22,8 @@ var callCmd = &cobra.Command{
 	Long: `
 	Call OpenFx function and reads from STDIN for handler(user defined function)'s input(bytes)
 	`,
-	Example: `  openfx function call echo-service
-	cat "sample.png" | openfx function call -g localhost:31113 inception-service
+	Example: `  openfx-cli function call echo-service
+	cat "sample.png" | openfx-cli function call -g localhost:31113 inception-service
         `,
 	PreRunE: preRunCall,
 	RunE: func(cmd *cobra.Command, args []string) error {
