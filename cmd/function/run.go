@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-
+	"strings"
+	
 	"github.com/keti-openfx/openfx-cli/builder"
 	"github.com/keti-openfx/openfx-cli/cmd/log"
 	"github.com/keti-openfx/openfx-cli/config"
