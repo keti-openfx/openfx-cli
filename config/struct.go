@@ -1,7 +1,7 @@
 package config
 
 const (
-	FxCliVersion     = "0.1.0"
+	FxCliVersion     = "0.5.0"
 	GatewayEnvVarKey = "OPENFX_URL"
 
 	DefaultProviderName = "openfx"
