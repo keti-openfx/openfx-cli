@@ -46,14 +46,9 @@ var deployCmd = &cobra.Command{
         `,
 	PreRunE: preRunDeploy,
 	Run: func(cmd *cobra.Command, args []string) {
-		//var validate string
-		//fmt.Print("Is docker registry(default: 10.0.0.180:5000) correct ? [y/n] ")
-		//fmt.Scanln(&validate)
 		if err := runDeploy(); err != nil {
 			fmt.Println(err.Error())
 		}
-
-		//log.Fatal("Please provide proper docker private registry\n")
 
 		return
 	},
@@ -139,7 +134,7 @@ func runDeploy() error {
 		if len(registry) > 0 {
 	                fmt.Printf("Is docker registry(registry: %s) correct ? [y/n] ", registry)
 		} else {
-	                fmt.Printf("Is docker registry(registry: 10.0.0.180:5000) correct ? [y/n] ")
+	                fmt.Printf("Is docker registry(registry: %s) correct ? [y/n] ", function.RegistryURL)
 		}
                 fmt.Scanln(&validate)
 
@@ -160,36 +155,6 @@ func runDeploy() error {
 
 				function.Image = registry + "/" + function.Name
 				function.RegistryURL = registry
-			/*
-				confYaml, err := ioutil.ReadFile("config.yaml")
-				if err != nil {
-					log.Fatal("%v\n", err)
-				}
-
-				UnmarshalErr := yml.Unmarshal(confYaml, &fxServices)
-				if UnmarshalErr != nil {
-					log.Fatal("%v\n", UnmarshalErr)
-				}
-
-				fxServices.Functions[function.Name] = config.Function{
-					Runtime:     function.Runtime,
-					Description: function.Description,
-					Maintainer:  function.Maintainer,
-					Handler:     config.Handler{Dir: function.Handler.Dir, Name: function.Handler.Name, File: function.Handler.File},
-					RegistryURL: function.RegistryURL,
-					Image:       function.Image,
-				}
-
-				newconfYaml, newconfYamlErr := yml.Marshal(&fxServices)
-				if newconfYamlErr != nil {
-					log.Fatal("%v\n", newconfYamlErr)
-				}
-
-				newcofWriteErr := ioutil.WriteFile(configFile, newconfYaml, 0600)
-				if newcofWriteErr != nil {
-					log.Fatal("%v\n", newcofWriteErr)
-				}
-			*/
 			}
 
 			log.Info("Pushing: %s, Image: %s in Registry: %s ...\n", function.Name, function.Image, function.RegistryURL)

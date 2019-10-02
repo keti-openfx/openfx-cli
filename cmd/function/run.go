@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/keti-openfx/openfx-cli/builder"
 	"github.com/keti-openfx/openfx-cli/cmd/log"
@@ -17,7 +18,6 @@ import (
 
 func init() {
 	runCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
-	//runCmd.MarkFlagRequired("config")
 }
 
 var runCmd = &cobra.Command{
@@ -42,13 +42,18 @@ var runCmd = &cobra.Command{
 }
 
 func preRunRun(cmd *cobra.Command, args []string) error {
-	/*
-		if configFile == "" {
-			e := fmt.Sprintf("please provide a '-f' flag for function creation\n")
-			return errors.New(e)
-		}*/
 	if configFile == "" {
-		configFile = "config.yaml"
+		files, err := ioutil.ReadDir("./")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, f := range files{
+			if strings.Contains(f.Name(), "yaml") {
+				configFile = f.Name()
+			}
+		}
+
 		if err := parseConfigFile(); err != nil {
 			return err
 		}
@@ -80,7 +85,6 @@ func run(function config.Function) error {
 }
 
 func stop(function config.Function) error {
-	//var err error
 
 	result, err := builder.StopContainer(function.Name)
 	if err != nil {
@@ -92,7 +96,6 @@ func stop(function config.Function) error {
 }
 
 func remove(function config.Function) error {
-	//var err error
 
 	result, err := builder.RemoveContainer(function.Name)
 	if err != nil {

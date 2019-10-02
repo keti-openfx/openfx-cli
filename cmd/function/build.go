@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"io/ioutil"
 
 	"github.com/keti-openfx/openfx-cli/builder"
 	"github.com/keti-openfx/openfx-cli/cmd/log"
@@ -20,19 +21,18 @@ func init() {
 	buildCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
 	buildCmd.Flags().BoolVar(&noCache, "nocache", false, "Do not use cache when building runtime image")
 	buildCmd.Flags().BoolVarP(&buildVerbose, "buildverbose", "v", false, "Print function build log")
-	buildCmd.MarkFlagRequired("config")
 }
 
 var buildCmd = &cobra.Command{
 	Use:   `build -f <YAML_CONFIG_FILE>`,
 	Short: "Build OpenFx function Image",
 	Long: `
-	Build OpenFx function Image via the supplied YAML config using the "-f" flag
+	Build OpenFx function Image via the supplied YAML config 
 	`,
 	Example: `
-	openfx-cli function build -f config.yaml
+	openfx-cli function build 
 	openfx-cli function build -f ./config.yaml
-	openfx-cli function build -f config.yaml -v
+	openfx-cli function build -v
 	`,
 	PreRunE: preRunBuild,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -45,8 +45,21 @@ var buildCmd = &cobra.Command{
 
 func preRunBuild(cmd *cobra.Command, args []string) error {
 	if configFile == "" {
-		e := fmt.Sprintf("please provide a '-f' flag to read config file for function build\n")
-		return errors.New(e)
+		files, err := ioutil.ReadDir("./")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, f := range files {
+			if strings.Contains(f.Name(), "yaml") {
+				configFile = f.Name()
+			}
+		}
+
+		if err := parseConfigFile(); err != nil { 
+			return err
+		}
+
 	} else {
 		if err := parseConfigFile(); err != nil {
 			return err
@@ -86,12 +99,6 @@ func runBuild() error {
 
 	for name, function := range fxServices.Functions {
 		function.Name = name
-
-		//BUILD
-		/*
-			if function.SkipBuild {
-				log.Print("Skipping build: %s\n", function.Name)
-			}*/
 
 		log.Info("Building function (%s) image...\n", function.Name)
 		if err := build(noCache, buildVerbose, function); err != nil {

@@ -77,8 +77,5 @@ func runInfo() error {
 
 	fmt.Printf("%s\n", string(yamlInfo))
 
-	//	code := ``
-	//	fmt.Printf("code:\n%s\n", string(code))
-
 	return nil
 }

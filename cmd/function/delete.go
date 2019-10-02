@@ -21,9 +21,10 @@ var deleteCmd = &cobra.Command{
 	Short:   "Delete OpenFx functions",
 	Long: `
 	Delete OpenFx function via the supplied YAML config using
-the "-f" flag (which may contain multiple function definitions)
+the "-f" flag or the function name(which may contain multiple function definitions)
 `,
 	Example: `  openfx-cli function delete -f config.yml
+		    openfx-cli function delete echo
                   `,
 	PreRunE: preRunDelete,
 	Run: func(cmd *cobra.Command, args []string) {
