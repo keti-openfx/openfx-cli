@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
 	"github.com/keti-openfx/openfx-cli/builder"
 	"github.com/keti-openfx/openfx-cli/cmd/log"
 	"github.com/keti-openfx/openfx-cli/config"
@@ -73,8 +72,6 @@ func preRunRun(cmd *cobra.Command, args []string) error {
 }
 
 func run(function config.Function) error {
-	//var err error
-
 	result, err := builder.RunImage(function.Image, function.Handler.Dir, function.Name)
 	if err != nil {
 		log.Print(result)
@@ -85,7 +82,6 @@ func run(function config.Function) error {
 }
 
 func stop(function config.Function) error {
-
 	result, err := builder.StopContainer(function.Name)
 	if err != nil {
 		log.Print(result)
@@ -96,7 +92,6 @@ func stop(function config.Function) error {
 }
 
 func remove(function config.Function) error {
-
 	result, err := builder.RemoveContainer(function.Name)
 	if err != nil {
 		log.Print(result)
