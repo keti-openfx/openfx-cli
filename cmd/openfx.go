@@ -9,7 +9,7 @@ import (
 )
 
 var openfxCmd = &cobra.Command{
-	Use:   "openfx",
+	Use:   "openfx-cli",
 	Short: "Manage Openfx",
 	Long: `
 	Manage Openfx functions from the command line interface
@@ -58,6 +58,7 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
 
 Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+
 `
 
 var helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
