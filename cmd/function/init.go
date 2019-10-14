@@ -27,7 +27,7 @@ func init() {
 
 var initCmd = &cobra.Command{
 	Use: `init <FUNCTION_NAME> --runtime <RUNTIME>
-  openfx init <FUNCTION_NAME> -r <RUNTIME> [-f <APPEND_EXISTING_YAML_FILE>] [-g <FX_GATEWAY_ADDRESS>]`,
+  openfx-cli function init <FUNCTION_NAME> -r <RUNTIME> [-f <APPEND_EXISTING_YAML_FILE>] [-g <FX_GATEWAY_ADDRESS>]`,
 	Short: "Prepare a OpenFx function",
 	Long: `
 	The init command creates a new function template based upon hello-world in the given runtime. When user execute init command, config file, runtime directory, and directory with function name are created. Also, in directory with function name, there is handler file and user can modify this file later. 

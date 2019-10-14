@@ -11,7 +11,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/keti-openfx/openfx-cli/config"
-	"github.com/openfaas/faas-cli/versioncontrol"
+	"github.com/keti-openfx/openfx-cli/versioncontrol"
 	"github.com/spf13/cobra"
 )
 
@@ -70,6 +70,7 @@ func ExistFileOrDir(name string) bool {
 
 func DownloadRuntimes(path, runtimeURL string) error {
 	args := map[string]string{"dir": path, "repo": runtimeURL}
+        fmt.Println(runtimeURL)
 	if err := versioncontrol.GitClone.Invoke(".", args); err != nil {
 		return err
 	}
