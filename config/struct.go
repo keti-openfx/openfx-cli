@@ -6,7 +6,7 @@ const (
 
 	DefaultProviderName = "openfx"
 	DefaultConfigFile   = "config.yaml"
-	DefaultRegistry     = "keti.asuscomm.com:6000"
+	DefaultRegistry     = "keti.asuscomm.com:5001"
 	DefaultGatewayURL   = "keti.asuscomm.com:31113"
 	//FIXME
 	DefaultRuntimeRepo = "https://github.com/keti-openfx/OpenFx-runtime.git"
