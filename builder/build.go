@@ -39,7 +39,7 @@ func BuildImage(image string, handler string, functionName string, registry stri
 
 	buildCmd := []string{"docker", "build"}
 	buildCmd = append(buildCmd, flagSlice...)
-	buildCmd = append(buildCmd, "-t", image, "../")
+	buildCmd = append(buildCmd, "-t", image, "--network=host", "../")
 
 	var err error
 	var result string
