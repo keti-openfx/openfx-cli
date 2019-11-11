@@ -6,30 +6,279 @@ OpenFx를 사용하기 위한 Command Line Interface 도구이다. 이를 통해
 
 # Requirements
 
-`openfx-cli`를 사용하여 서비스들을 배포하기 위해서는 미니쿠베를 통해 구동된 쿠버네티스 클러스터 내에 `openfx-gateway`가 컨테이너로 실행 중이어야 한다. 이는 다음의 [링크](<https://github.com/keti-openfx/openfx/blob/master/documents/3.Compile_OpenFx.md>)를 통해 진행할 수 있다. 
+### Compile OpenFx
+
+`openfx-cli`를 사용하여 서비스들을 배포하기 위해서는 `openfx-gateway`와 `openfx-executor`의 컴파일이 완료되어야 하고, 미니쿠베를 통해 구동된 쿠버네티스 클러스터 내에 `openfx-gateway`가 컨테이너로 실행 중이어야 한다. 이는 다음의 [링크](<https://github.com/keti-openfx/openfx/blob/master/documents/3.Compile_OpenFx.md>)를 통해 진행할 수 있다. 
+
+###
+
+### Installing Go
+
+- `openfx-cli`를 사용하기 위해서는 Go 언어가 설치되어 있어야 한다.  Go 언어 설치를 진행하기 위해 [공식 홈페이지](<https://golang.org/doc/install>)에서 **호스트 OS에 맞게** 원하는 버전의 설치파일을 다운로드 받는다. 아래와 같은 명령어를 이용하여 설치파일을 압축해제하고, 압축 해제된 디렉토리를 `/usr/local`로 위치를 옮긴다. 
+
+  ```
+  $ wget https://dl.google.com/go/go[version].[Host OS].tar.gz
+  $ sudo tar -xvf go[version].[Host OS].tar.gz
+  $ sudo mv go /usr/local
+  ```
+
+- `.bashrc` 파일을 수정하여 go와 관련된 환경변수를 설정한다.
+
+  ```
+  $ vim ~/.bashrc
+  >>
+  # add this lines
+  export GOROOT=/usr/local/go
+  export GOPATH=$HOME/go
+  export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+  ```
+
+- 변경한 `.bashrc` 파일을 적용한다.
+
+  ```
+  $ source ~/.bashrc
+  ```
+
+- Go가 설치되었는지를 확인한다.
+
+  ```
+  $ go version
+  >>>
+  go version go1.12.3 linux/amd64
+  
+  $ go env
+  >>>
+  GOARCH="amd64"
+  GOBIN="/root/workspace/go/bin"
+  GOCACHE="/root/.cache/go-build"
+  GOEXE=""
+  GOFLAGS=""
+  GOHOSTARCH="amd64"
+  GOHOSTOS="linux"
+  GOOS="linux"
+  GOPATH="/root/workspace/go"
+  GOPROXY=""
+  GORACE=""
+  GOROOT="/usr/local/go"
+  GOTMPDIR=""
+  GOTOOLDIR="/usr/local/go/pkg/tool/linux_amd64"
+  GCCGO="gccgo"
+  CC="gcc"
+  CXX="g++"
+  CGO_ENABLED="1"
+  GOMOD=""
+  CGO_CFLAGS="-g -O2"
+  CGO_CPPFLAGS=""
+  CGO_CXXFLAGS="-g -O2"
+  CGO_FFLAGS="-g -O2"
+  CGO_LDFLAGS="-g -O2"
+  PKG_CONFIG="pkg-config"
+  GOGCCFLAGS="-fPIC -m64 -pthread -fmessage-length=0 -fdebug-prefix-map=/tmp/go-build323300119=/tmp/go-build -gno-record-gcc-switches"
+  ```
+
+  - `go version`과 `go env`를 입력하여 출력되는 정보는 위와 상이할 수 있다.
 
 
 
 # Compile OpenFx-cli
 
-`openfx-cli`를 클론하여 컴파일을 진행한다. 
+- `openfx-cli`를 클론하여 컴파일을 진행한다. `openfx-cli` 클론은 **keti-openfx** 디렉토리 밑에서 진행한다.
+
+  ```
+  $ cd $GOPATH/src/github.com/keti-openfx
+  $ git clone https://github.com/keti-openfx/openfx-cli.git
+  $ cd openfx-cli
+  ```
+
+- `make`명령을 실행하여 컴파일을 진행한다.
+
+  ```
+  $ make build
+  ```
+
+- `$GOPATH/bin`을 확인해보면 `openfx-cli`가 컴파일 되어있는 것을 확인할 수 있다.
+
+  ```
+  $ cd $GOPATH/bin
+  $ ls
+  openfx-cli
+  ```
+
+
+
+# Verify OpenFx-cli
+
+`openfx-cli` 컴파일까지 완료하였으면, 프레임워크 위 API 단위 응용이 배포되는지를 확인하여야 한다. 이는 다음과 같은 절차로 진행한다. 
+
+## Create folder for CLI testing
 
 ```
-$ git clone https://github.com/keti-openfx/openfx-cli.git
-$ cd openfx-cli
+$ mkdir cli-test
+$ cd cli-test
 ```
 
-`make`명령을 실행하여 컴파일을 진행한다.
+
+
+## Cloninig `OpenFx-runtime`
 
 ```
-$ make build
+$ git clone https://github.com/keti-openfx/OpenFx-runtime.git runtime
 ```
 
-`$GOPATH/bin`을 확인해보면 `openfx-cli`가 컴파일 되어있는 것을 확인할 수 있다.
+
+
+## Create OpenFx function
+
+- 함수를 배포하기 위해 함수의 initialization을 진행(runtime 설정, 함수 이름 설정 및 config.yaml 파일 생성)
+
+  ```bash
+  $ openfx-cli function init <FUNCTION NAME> --runtime <RUNTIME NAME> 
+  >> 
+  Folder: <FUNCTION NAME> created
+  Fucntion handler created in folder: <FUNCTION NAME>/src
+  Rewrite the function handler code in <FUNCTION NAME>/src folder
+  Config file written: config.yaml
+  
+  $ cd <FUNCTION NAME>
+  ```
+
+  > <FUNCTION NAME> : 생성하고자할 함수의 이름
+  >
+  > <RUNTIME NAME> : 함수 작성 언어 (go, python2, python3 중 택일)
+
+- 게이트웨이 설정
+
+  함수 초기화 시, 기본적으로 설정되는 게이트웨이의 주소는 `localhost:31113`이다.  **다른 사용자 호스트 OS에 함수를 배포하고자 하는 경우**, `--gateway` 옵션으로 게이트웨이 주소를 변경할 수 있다. 
+
+  ```bash
+  $ openfx-cli function init <FUNCTION NAME> --runtime <RUNTIME NAME> --gateway <호스트 OS IP:31113>
+  
+  >>
+  Folder: <FUNCTION NAME> created
+  Fucntion handler created in folder: <FUNCTION NAME>/src
+  Rewrite the function handler code in <FUNCTION NAME>/src folder
+  Config file written: config.yaml
+  
+  $ cd <FUNCTION NAME>
+  ```
+
+- runtime은 `go`, `python2`, `python3`를 지원한다.
+
+
+
+## Configure `config.yaml`
 
 ```
-$ cd $GOPATH/bin
-$ ls
-openfx-cli
+functions:
+  <FUNCTION NAME>:
+    runtime: <RUNTIME NAME>
+    desc: ""
+    maintainer: ""
+    handler:
+      dir: ./src
+      file: handler.py
+    docker_registry: <REGISTRY IP>:<PORT>
+    image: <REGISTRY IP>:<PORT>/<FUNCTION NAME>
+openfx:
+  gateway: localhost:31113
 ```
+
+- `<REGISTRY IP>`, `<PORT>`를 레지스트리에 맞춰 변경한다.
+
+
+
+## Building Function
+
+- Kubernetes에 생성한 함수를 배포하기 위한 도커 이미지 생성. (도커 이미지는 로컬에 생성됨)
+
+  ```bash
+    $ openfx-cli function build
+    
+    >> 
+    Building function (<FUNCTION NAME>) image ...
+    Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> built in local environment.
+  ```
+
+- `-v` 옵션으로 이미지가 빌드되는 과정을 로그로 확인할 수 있다.
+
+  ```bash
+    $ openfx-cli function build -v
+    
+    >>
+    ...
+    Building function (<FUNCTION NAME>) image ...
+    Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> built in local environment.
+  ```
+
+
+## Deploying Funtion
+
+- 생성된 이미지를 통해 Kubernetes에 함수 배포.
+
+  ```bash
+    $ openfx-cli function deploy -f config.yaml
+  
+    >> 
+    Is docker registry(registry: <REGISTRY IP> : <PORT>) correct ? [y/n] y
+    Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
+    Deploying: echo ...
+    http trigger url: http://localhost:31113/function/echo
+  ```
+
+- 함수 Initialization 시 `--gateway` 옵션으로 게이트웨이를 설정하였다면 함수 배포 시, 마찬가지로 `--gateway` 옵션을 주어야 한다. 
+
+  ```bash
+    $ openfx-cli function deploy -f config.yaml --gateway <호스트 OS IP:31113>
+  
+    >> 
+    Is docker registry(registry: <REGISTRY IP> : <PORT>) correct ? [y/n] y
+    Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
+    Deploying: echo ...
+    http trigger url: http://<호스트 OS IP:31113>/function/echo
+  ```
+
+
+## Confirm OpenFx function list
+
+- Kubernetes에 배포가 완료된 함수의 목록 확인.
+
+  ```bash
+    $ openfx-cli function list
+  
+    >> 
+    Function    Image           Maintainer    Invocations    Replicas    Status    Description
+    echo        $(repo)/echo                  0              1           Ready
+  ```
+
+- 게이트웨이 옵션
+
+  ```bash
+    $ openfx-cli function list --gateway <호스트 OS IP:31113>
+  
+    >> 
+    Function    Image           Maintainer    Invocations    Replicas    Status    Description
+    echo        $(repo)/echo                  0              1           Ready
+  ```
+
+
+## Verify deployed function using invoke
+
+- Kubernetes에 배포된 함수를 호출.
+
+  ```bash
+    $ echo "Hello" |openfx-cli function call echo
+  
+    >> 
+    Hello
+  ```
+
+- 게이트웨이 옵션
+
+  ```bash
+    $ echo "Hello" |openfx-cli function call echo --gateway <호스트 OS IP:31113>
+  
+    >> 
+    Hello
+  ```
+
 
