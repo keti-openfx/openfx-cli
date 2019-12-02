@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
+	"syscall"
 	"strings"
+	
 	"github.com/keti-openfx/openfx-cli/builder"
 	"github.com/keti-openfx/openfx-cli/cmd/log"
 	"github.com/keti-openfx/openfx-cli/config"
@@ -137,15 +140,34 @@ func Call(address string, input []byte, function config.Function) string {
 }
 
 func runRun() error {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	
 	if len(fxServices.Functions) <= 0 {
 		return errors.New("")
 	}
 
 	for name, function := range fxServices.Functions {
+		go func() {
+			<-c
+			os.Exit(1)
+		}()
 		function.Name = name
 
 		if len(functionName) < 1 || function.Name != functionName {
 			log.Fatal("Invalid function name. please describe name of function correctly\n")
+		}
+
+		runningContainer := builder.CheckImgRunning()
+
+		if strings.Contains(runningContainer, function.Name) {
+			if err := stop(function); err != nil {
+				return err
+			}
+
+			if err := remove(function); err != nil {
+				return err
+			}
 		}
 
 		log.Info("Running image (%s) in local\n", function.Image)
