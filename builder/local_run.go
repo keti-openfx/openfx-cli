@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"bytes"
+	
+	"github.com/keti-openfx/openfx-cli/cmd/log"
 )
 
 func RunImage(image string, handler string, functionName string) (string, error) {
@@ -54,4 +57,19 @@ func RemoveContainer(containerName string) (string, error) {
 	}
 
 	return "Removing container successfully", nil
+}
+
+func CheckImgRunning() string {
+	var output bytes.Buffer
+
+	findCmd := []string{"docker", "ps", "-a", "--format", "{{.Names}}"}
+
+	execCmd := exec.Command(findCmd[0], findCmd[1:]...)
+	execCmd.Stdout = &output
+
+	if err := execCmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	return output.String()
 }
