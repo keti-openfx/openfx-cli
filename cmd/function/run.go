@@ -23,7 +23,7 @@ func init() {
 }
 
 var runCmd = &cobra.Command{
-	Use:   `run <FUNCTION_NAME> [-f <YAML_CONFIG_FILE>]`,
+	Use:   `run <FUNCTION_NAME>`,
 	Short: "Run OpenFx Image in local",
 	Long: `
 	Run OpenFx Image that created when execute "build" command for debugging in local
