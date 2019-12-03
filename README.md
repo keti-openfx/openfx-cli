@@ -120,12 +120,12 @@ $ sudo systemctl status docker
 $ sudo vim /etc/docker/daemon.json
 
 >>
-{"insecure-registries": ["<YOUR PRIVATE REGISTRY SERVER IP:PORT>"]}
+{"insecure-registries": ["YOUR PRIVATE REGISTRY SERVER IP:PORT"]}
 
 $ service docker restart
 ```
 
-- <YOUR PRIVATE REGISTRY SERVER IP:PORT>에 사용하고자하는 도커 레지스트리의 IP 주소와 Port 번호를 기입하면 된다. 
+- YOUR PRIVATE REGISTRY SERVER IP:PORT에 사용하고자하는 도커 레지스트리의 IP 주소와 Port 번호를 기입하면 된다. 
 
 
 
