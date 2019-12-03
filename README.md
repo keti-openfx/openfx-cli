@@ -80,6 +80,55 @@ OpenFx를 사용하기 위한 Command Line Interface 도구이다. 이를 통해
 
 
 
+### Installing Docker
+
+`openfx-cli`를 통해 빌드된 함수 이미지를 레지스트리에 저장하기 위해서는 해당 레지스트리에 로그인하는 과정이 필요하다. 이를 위해 먼저 도커를 설치해주어야 한다. 
+
+```
+$ sudo apt-get remove docker docker-engine docker.io containerd runc
+$ sudo apt-get update
+
+$ sudo apt-get install apt-transport-https \
+    ca-certificates curl gnupg-agent software-properties-common
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+$ sudo apt-key fingerprint 0EBFCD88
+$ sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) stable"
+
+$ sudo apt-get update
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+$ docker --version
+>>
+Docker version 18.06.1-ce, build e68fc7a
+
+$ sudo usermod -aG docker $USER 
+$ reboot
+
+$ sudo systemctl status docker
+```
+
+- `docker version`을 입력하여 출력되는 정보는 위와 상이할 수 있다.
+
+
+
+### Setting insecure registries
+
+도커 레지스트리는 SSL 인증서 없이 이용할 수 없다. SSL 인증서 없이 도커 레지스트리를 사용하기 위해서는 `insecure registries`에 대한 설정이 필요한데, 이는 다음과 같이 진행한다.
+
+```
+$ sudo vim /etc/docker/daemon.json
+
+>>
+{"insecure-registries": ["<YOUR PRIVATE REGISTRY SERVER IP:PORT>"]}
+
+$ service docker restart
+```
+
+- <YOUR PRIVATE REGISTRY SERVER IP:PORT>에 사용하고자하는 도커 레지스트리의 IP 주소와 Port 번호를 기입하면 된다. 
+
+
+
 # Compile OpenFx-cli
 
 - `openfx-cli`를 클론하여 컴파일을 진행한다. `openfx-cli` 클론은 **keti-openfx** 디렉토리 밑에서 진행한다.
