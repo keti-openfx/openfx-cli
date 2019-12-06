@@ -3,7 +3,7 @@ package function
 import (
 	"errors"
 	"fmt"
-	yml "gopkg.in/yaml.v2"
+	//yml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 
@@ -129,54 +129,29 @@ func runDeploy() error {
 	}
 
 	for name, function := range fxServices.Functions {
+
 		function.Name = name
-                var validate string
-		if len(registry) > 0 {
-	                fmt.Printf("Is docker registry(registry: %s) correct ? [y/n] ", registry)
-		} else {
-	                fmt.Printf("Is docker registry(registry: %s) correct ? [y/n] ", function.RegistryURL)
-		}
-                fmt.Scanln(&validate)
 
-		//Docker private registry
-		if validate == "y" {
-			if len(registry) > 0 {
-				result, err := builder.RenameImage(function.Image, registry, function.Name)
-				if err != nil {
-					log.Print(result)
-					return err
-				}
-
-				result, err = builder.RemoveOldImage(function.Image)
-				if err != nil {
-					log.Print(result)
-					return err
-				}
-
-				function.Image = registry + "/" + function.Name
-				function.RegistryURL = registry
-			}
-
-			log.Info("Pushing: %s, Image: %s in Registry: %s ...\n", function.Name, function.Image, function.RegistryURL)
-			if deployVerbose {
-				err := builder.ExecCommandPipe("./", []string{"docker", "push", function.Image}, os.Stdout, os.Stderr)
-				if err != nil {
-					return err
-				}
-			} else {
-				_, err := builder.ExecCommand("./", []string{"docker", "push", function.Image})
-				if err != nil {
-					return err
-				}
-			}
-
-			log.Info("Deploying: %s ...\n", function.Name)
-
-			//DEPLOY
-			if err := deploy(gateway, function, update, replace); err != nil {
+		log.Info("Pushing: %s, Image: %s in Registry: %s ...\n", function.Name, function.Image, function.RegistryURL)
+		if deployVerbose {
+			err := builder.ExecCommandPipe("./", []string{"docker", "push", function.Image}, os.Stdout, os.Stderr)
+			if err != nil {
 				return err
 			}
+		} else {
+			_, err := builder.ExecCommand("./", []string{"docker", "push", function.Image})
+			if err != nil {
+				return err
+			}
+		}
 
+		log.Info("Deploying: %s ...\n", function.Name)
+
+		//DEPLOY
+		if err := deploy(gateway, function, update, replace); err != nil {
+			return err
+		}
+		/*
 			confYaml, err := ioutil.ReadFile(configFile)
 			if err != nil {
 				log.Fatal("%v\n", err)
@@ -205,12 +180,8 @@ func runDeploy() error {
 			if newcofWriteErr != nil {
 				log.Fatal("%v\n", newcofWriteErr)
 			}
-
-			log.Info("http trigger url: http://%s/function/%s \n", gateway, function.Name)
-
-		} else {
-			log.Fatal("Please provide proper docker private registry\n")
-		}
+		*/
+		log.Info("http trigger url: http://%s/function/%s \n", gateway, function.Name)
 	}
 
 	return nil
