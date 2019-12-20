@@ -3,7 +3,6 @@ package function
 import (
 	"errors"
 	"fmt"
-	//yml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 
@@ -26,7 +25,7 @@ func init() {
 	deployCmd.Flags().StringVarP(&configFile, "config", "f", "", "Path to YAML config file describing function(s)")
 	deployCmd.Flags().StringVarP(&registry, "registry", "", "", "Docker private registry url")
 	deployCmd.Flags().BoolVar(&replace, "replace", false, "Remove and re-create existing function(s)")
-	deployCmd.Flags().BoolVar(&update, "update", false, "Perform rolling update on existing function(s)")
+	deployCmd.Flags().BoolVar(&update, "update", true, "Perform rolling update on existing function(s)")
 	deployCmd.Flags().BoolVarP(&deployVerbose, "deployverbose", "v", false, "Print function build log")
 	deployCmd.MarkFlagRequired("config")
 }
@@ -151,36 +150,7 @@ func runDeploy() error {
 		if err := deploy(gateway, function, update, replace); err != nil {
 			return err
 		}
-		/*
-			confYaml, err := ioutil.ReadFile(configFile)
-			if err != nil {
-				log.Fatal("%v\n", err)
-			}
 
-			UnmarshalErr := yml.Unmarshal(confYaml, &fxServices)
-			if UnmarshalErr != nil {
-				log.Fatal("%v\n", UnmarshalErr)
-			}
-
-			fxServices.Functions[function.Name] = config.Function{
-				Runtime:     function.Runtime,
-				Description: function.Description,
-				Maintainer:  function.Maintainer,
-				Handler:     config.Handler{Dir: function.Handler.Dir, Name: function.Handler.Name, File: function.Handler.File},
-				RegistryURL: function.RegistryURL,
-				Image:       function.Image,
-			}
-
-			newconfYaml, newconfYamlErr := yml.Marshal(&fxServices)
-			if newconfYamlErr != nil {
-				log.Fatal("%v\n", newconfYamlErr)
-			}
-
-			newcofWriteErr := ioutil.WriteFile(configFile, newconfYaml, 0600)
-			if newcofWriteErr != nil {
-				log.Fatal("%v\n", newcofWriteErr)
-			}
-		*/
 		log.Info("http trigger url: http://%s/function/%s \n", gateway, function.Name)
 	}
 
