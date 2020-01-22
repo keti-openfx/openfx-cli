@@ -193,7 +193,7 @@ $ git clone https://github.com/keti-openfx/OpenFx-runtime.git runtime
 
   > <FUNCTION NAME> : 생성하고자할 함수의 이름
   >
-  > <RUNTIME NAME> : 함수 작성 언어 (go, python2, python3 중 택일)
+  > <RUNTIME NAME> : 함수 작성 언어 (go, python2, python3, nodejs, ruby, cpp 중 택일)
 
 - 게이트웨이 설정
 
@@ -211,7 +211,7 @@ $ git clone https://github.com/keti-openfx/OpenFx-runtime.git runtime
   $ cd <FUNCTION NAME>
   ```
 
-- runtime은 `go`, `python2`, `python3`를 지원한다.
+- runtime은 `go`, `python2`, `python3`, `nodejs`, `ruby`, `cpp` 를 지원한다.
 
 
 
