@@ -11,6 +11,8 @@ const (
 	//FIXME
 	DefaultRuntimeRepo = "https://github.com/keti-openfx/OpenFx-runtime.git"
 	DefaultRuntimeDir  = "./runtime"
+	DefaultCPU = ""
+	DefaultMemory = ""
 )
 
 type Services struct {

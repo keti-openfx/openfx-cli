@@ -19,6 +19,8 @@ var (
 	update        bool
 	deployVerbose bool
 	registry      string
+	minreplicas   int32
+        maxreplicas   int32
 )
 
 func init() {
@@ -27,7 +29,11 @@ func init() {
 	deployCmd.Flags().BoolVar(&replace, "replace", false, "Remove and re-create existing function(s)")
 	deployCmd.Flags().BoolVar(&update, "update", true, "Perform rolling update on existing function(s)")
 	deployCmd.Flags().BoolVarP(&deployVerbose, "deployverbose", "v", false, "Print function build log")
+	deployCmd.Flags().Int32Var(&minreplicas, "min", 1, "Minimum Replicas for Function")
+	deployCmd.Flags().Int32Var(&maxreplicas, "max", 1, "Maximum Replicas for Function")
 	deployCmd.MarkFlagRequired("config")
+	deployCmd.MarkFlagRequired("min")
+	deployCmd.MarkFlagRequired("max")
 }
 
 var deployCmd = &cobra.Command{
@@ -42,6 +48,7 @@ var deployCmd = &cobra.Command{
 	openfx-cli function deploy -f config.yml -v
 	openfx-cli function deploy -f config.yml --registry 127.0.0.1:5000
 	openfx-cli function deploy -f config.yml -g 10.0.0.180:31113
+	openfx-cli function deploy -f config.yml --min 1 --max 5
         `,
 	PreRunE: preRunDeploy,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -71,10 +78,15 @@ func preRunDeploy(cmd *cobra.Command, args []string) error {
 	}
 	gateway = config.GetFxGatewayURL(gateway, configURL)
 
+	if minreplicas == int32(0) || maxreplicas == int32(0) {
+		e := fmt.Sprintf("please provide a '--min', '--max' flag for function's replicas for autoscaling")
+		return errors.New(e)
+	}
+
 	return nil
 }
 
-func deploy(gw string, function config.Function, update, replace bool) error {
+func deploy(gw string, function config.Function, update, replace bool, minreplicas int32, maxreplicas int32) error {
 
 	//function.Secrets
 	//sendRegistryAuth
@@ -113,6 +125,8 @@ func deploy(gw string, function config.Function, update, replace bool) error {
 		Limits:       function.Limits,
 		Requests:     function.Requests,
 
+		MinReplicas:  minreplicas,
+		MaxReplicas:  maxreplicas,
 		Update:  update,
 		Replace: replace,
 	}
@@ -147,7 +161,7 @@ func runDeploy() error {
 		log.Info("Deploying: %s ...\n", function.Name)
 
 		//DEPLOY
-		if err := deploy(gateway, function, update, replace); err != nil {
+		if err := deploy(gateway, function, update, replace, minreplicas, maxreplicas); err != nil {
 			return err
 		}
 

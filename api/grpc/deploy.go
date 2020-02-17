@@ -30,10 +30,16 @@ type DeployConfig struct {
 	Limits   *config.FunctionResources
 	Requests *config.FunctionResources
 
+	MinReplicas int32
+	MaxReplicas int32
 	Update  bool
 	Replace bool
 }
-
+/*
+func int32p(i int32) *int32 {
+	return &i
+}
+*/
 func Deploy(c DeployConfig) error {
 
 	gateway := strings.TrimRight(c.FxGateway, "/")
@@ -58,6 +64,8 @@ func Deploy(c DeployConfig) error {
 		Secrets:     c.Secrets, // TODO: allow registry auth to be specified or read from local Docker credentials store
 		Labels:      c.Labels,
 		Annotations: c.Annotations,
+		MinReplicas: c.MinReplicas,
+		MaxReplicas: c.MaxReplicas,
 	}
 
 	hasLimits := false
