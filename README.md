@@ -193,7 +193,7 @@ $ git clone https://github.com/keti-openfx/OpenFx-runtime.git runtime
 
   > <FUNCTION NAME> : 생성하고자할 함수의 이름
   >
-  > <RUNTIME NAME> : 함수 작성 언어 (go, python2, python3, nodejs, ruby, cpp 중 택일)
+  > <RUNTIME NAME> : 함수 작성 언어 (go, python2, python3, nodejs, ruby, cpp, java, csharp 중 택일)
 
 - 게이트웨이 설정
 
@@ -211,7 +211,7 @@ $ git clone https://github.com/keti-openfx/OpenFx-runtime.git runtime
   $ cd <FUNCTION NAME>
   ```
 
-- runtime은 `go`, `python2`, `python3`, `nodejs`, `ruby`, `cpp` 를 지원한다.
+- runtime은 `go`, `python2`, `python3`, `nodejs`, `ruby`, `cpp`, `java`, `csharp`을 지원한다.
 
 
 
@@ -225,14 +225,22 @@ functions:
     maintainer: ""
     handler:
       dir: ./src
-      file: handler.py
+      file: handler.<RUNTIME>
     docker_registry: <REGISTRY IP>:<PORT>
     image: <REGISTRY IP>:<PORT>/<FUNCTION NAME>
+    requests:
+      memory: "150Mi"
+      cpu: "60m"
+      gpu: ""
 openfx:
-  gateway: localhost:31113
+  gateway: <호스트 OS IP>:31113
 ```
 
 - `<REGISTRY IP>`, `<PORT>`를 레지스트리에 맞춰 변경한다.
+- `gateway`의 <호스트 OS IP>는 `function init` 시 지정한 IP 이다. 
+- `requests`의 각각의 항목은 사용자가 임의로 지정할 수 있다. 
+  - memory: 최대 200Mi 까지 지정할 수 있다.
+  - cpu: 최대 80까지 지정할 수 있다. 
 
 
 
@@ -265,24 +273,29 @@ openfx:
 - 생성된 이미지를 통해 Kubernetes에 함수 배포.
 
   ```bash
-    $ openfx-cli function deploy -f config.yaml
+    $ openfx-cli function deploy -f config.yaml --min 1 --max 3 -v
   
     >> 
     Is docker registry(registry: <REGISTRY IP> : <PORT>) correct ? [y/n] y
     Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
+    ...
     Deploying: echo ...
+    Function hpatest-local already exists, attempting rolling-update.
     http trigger url: http://localhost:31113/function/echo
   ```
+
+  - min, max 옵션은 사용자 함수에 대한 레플리카 셋을 지정하는 옵션이다. 이 옵션도 마찬가지로 사용자 임의로 지정할 수 있다. (default: min 1, max 1)
 
 - 함수 Initialization 시 `--gateway` 옵션으로 게이트웨이를 설정하였다면 함수 배포 시, 마찬가지로 `--gateway` 옵션을 주어야 한다. 
 
   ```bash
-    $ openfx-cli function deploy -f config.yaml --gateway <호스트 OS IP:31113>
+    $ openfx-cli function deploy -f config.yaml --min 2 --max 5 --gateway <호스트 OS IP:31113> -v
   
     >> 
-    Is docker registry(registry: <REGISTRY IP> : <PORT>) correct ? [y/n] y
     Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
+    ...
     Deploying: echo ...
+    Function hpatest-local already exists, attempting rolling-update.
     http trigger url: http://<호스트 OS IP:31113>/function/echo
   ```
 
