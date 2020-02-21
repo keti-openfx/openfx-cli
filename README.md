@@ -239,8 +239,8 @@ openfx:
 - `<REGISTRY IP>`, `<PORT>`를 레지스트리에 맞춰 변경한다.
 - `gateway`의 <호스트 OS IP>는 `function init` 시 지정한 IP 이다. 
 - `requests`의 각각의 항목은 사용자가 임의로 지정할 수 있다. 
-  - memory: 최대 200Mi 까지 지정할 수 있다.
-  - cpu: 최대 80까지 지정할 수 있다. 
+  - memory: 사용자 함수 별 memory 사용량, 최대 200Mi 까지 지정할 수 있다.
+  - cpu: 사용자 함수 별 cpu 사용량, 최대 80까지 지정할 수 있다. 
 
 
 
@@ -276,7 +276,6 @@ openfx:
     $ openfx-cli function deploy -f config.yaml --min 1 --max 3 -v
   
     >> 
-    Is docker registry(registry: <REGISTRY IP> : <PORT>) correct ? [y/n] y
     Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
     ...
     Deploying: echo ...
