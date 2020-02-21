@@ -118,7 +118,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 		Handler:      config.Handler{Dir: handlerDir, Name: r.Handler.Name, File: r.Handler.File},
 		RegistryURL:  config.DefaultRegistry,
 		Image:        config.DefaultRegistry + "/" + functionName,
-		Limits:       &config.FunctionResources{CPU: config.DefaultCPU, Memory: config.DefaultMemory},
+		Requests:       &config.FunctionResources{CPU: config.DefaultCPU, Memory: config.DefaultMemory},
 		BuildArgs:    r.BuildArgs,
 		BuildOptions: r.BuildPackages,
 	}
