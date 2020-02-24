@@ -20,7 +20,7 @@ var (
 	deployVerbose bool
 	registry      string
 	minreplicas   int32
-        maxreplicas   int32
+	maxreplicas   int32
 )
 
 func init() {
@@ -32,8 +32,6 @@ func init() {
 	deployCmd.Flags().Int32Var(&minreplicas, "min", 1, "Minimum Replicas for Function")
 	deployCmd.Flags().Int32Var(&maxreplicas, "max", 1, "Maximum Replicas for Function")
 	deployCmd.MarkFlagRequired("config")
-	deployCmd.MarkFlagRequired("min")
-	deployCmd.MarkFlagRequired("max")
 }
 
 var deployCmd = &cobra.Command{
@@ -78,11 +76,6 @@ func preRunDeploy(cmd *cobra.Command, args []string) error {
 	}
 	gateway = config.GetFxGatewayURL(gateway, configURL)
 
-	if minreplicas == int32(0) || maxreplicas == int32(0) {
-		e := fmt.Sprintf("please provide a '--min', '--max' flag for function's replicas for autoscaling")
-		return errors.New(e)
-	}
-
 	return nil
 }
 
@@ -125,10 +118,10 @@ func deploy(gw string, function config.Function, update, replace bool, minreplic
 		Limits:       function.Limits,
 		Requests:     function.Requests,
 
-		MinReplicas:  minreplicas,
-		MaxReplicas:  maxreplicas,
-		Update:  update,
-		Replace: replace,
+		MinReplicas: minreplicas,
+		MaxReplicas: maxreplicas,
+		Update:      update,
+		Replace:     replace,
 	}
 	if err := grpc.Deploy(deployConfig); err != nil {
 		return err
