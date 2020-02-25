@@ -191,9 +191,9 @@ $ git clone https://github.com/keti-openfx/OpenFx-runtime.git runtime
   $ cd <FUNCTION NAME>
   ```
 
-  **<FUNCTION NAME> : 생성하고자할 함수의 이름**
+  > `<FUNCTION NAME>` : 생성하고자할 함수의 이름
   
-  **<RUNTIME NAME> : 함수 작성 언어 (go, python2, python3, nodejs, ruby, cpp, java, csharp 중 택일)**
+  > `<RUNTIME NAME>` : 함수 작성 언어 (go, python2, python3, nodejs, ruby, cpp, java, csharp 중 택일)
 
 - 게이트웨이 설정
 
