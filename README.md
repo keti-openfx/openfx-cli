@@ -229,8 +229,8 @@ functions:
     docker_registry: <REGISTRY IP>:<PORT>
     image: <REGISTRY IP>:<PORT>/<FUNCTION NAME>
     requests:
-      memory: "150Mi"
-      cpu: "60m"
+      memory: 50Mi
+      cpu: 50m
       gpu: ""
 openfx:
   gateway: <호스트 OS IP>:31113
@@ -239,10 +239,110 @@ openfx:
 - `<REGISTRY IP>`, `<PORT>`를 레지스트리에 맞춰 변경한다.
 - `gateway`의 <호스트 OS IP>는 `function init` 시 지정한 IP 이다. 
 - `requests`의 각각의 항목은 사용자가 임의로 지정할 수 있다. 
-  - memory: 사용자 함수 별 memory 사용량, 최대 200Mi 까지 지정할 수 있다.
-  - cpu: 사용자 함수 별 cpu 사용량, 최대 80까지 지정할 수 있다. 
+  - memory: 서비스 별 memory 사용량, 최대 200Mi 까지 지정할 수 있으며, 기본 값은 50Mi 이다.
+  - cpu: 서비스 별 cpu 사용량, 최대 80m까지 지정할 수 있으며, 기본 값은 50m 이다. 
 
+## Writing Handler
 
+- Handler 코드 작성(함수 init 시 지정한 runtime 선택)
+
+  - Golang
+
+    handler.go
+
+    ```go
+    package main
+    
+    import sdk "github.com/keti-openfx/openfx/executor/go/pb"
+    
+    func Handler(req sdk.Request) string {
+        return string(req.Input)
+    }
+    ```
+
+  - Python 2.7 / 3.4
+
+    handler.py
+
+    ```python
+    def Handler(req):
+        return req.input
+    ```
+
+  - Node Js
+
+    handler.js
+
+    ```js
+    function Handler(argStr) {
+        return argStr;
+    }
+    
+    module.exports = Handler;
+    ```
+
+  - Ruby
+
+    handler.rb
+
+    ```ruby
+    #!/usr/bin/env ruby
+    
+    module FxWatcher
+      def FxWatcher.Handler(argStr)
+        return argStr
+      end
+    end
+    ```
+
+  - C++
+
+    handler.cc
+
+    ```c++
+    #include <iostream>
+    
+    using namespace std;
+    
+    string Handler(const string req) {
+      return req;
+    }
+    ```
+
+  - Java
+
+    Handler.java
+
+    ```java
+    package io.grpc.fxwatcher;
+    
+    import com.google.protobuf.ByteString;
+    
+    public class Handler {
+    
+      public static String reply(ByteString input) {
+        return input.toStringUtf8() + "test";
+      }
+    
+    }
+    ```
+
+  - C#
+
+    handler.cs
+
+    ```c#
+    namespace Fx
+    {
+        class Function
+        {
+            public byte[] Handler(byte[] Input)
+            {
+                return Input; 
+            }
+        }
+    }
+    ```
 
 ## Building Function
 
@@ -273,17 +373,30 @@ openfx:
 - 생성된 이미지를 통해 Kubernetes에 함수 배포.
 
   ```bash
-    $ openfx-cli function deploy -f config.yaml --min 1 --max 3 -v
+    $ openfx-cli function deploy -f config.yaml -v
   
     >> 
     Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
     ...
     Deploying: echo ...
-    Function hpatest-local already exists, attempting rolling-update.
+    Attempting update... but Function Not Found. Deploying Function...
     http trigger url: http://localhost:31113/function/echo
   ```
 
-  - min, max 옵션은 사용자 함수에 대한 레플리카 셋을 지정하는 옵션이다. 이 옵션도 마찬가지로 사용자 임의로 지정할 수 있다. (default: min 1, max 1)
+- OpenFx는 기본적으로 사용자 함수에 대해 오토스케일링을 제공하고 있다. 사용자 함수의 자원 사용량이 OpenFx API Gateway에서 한계치로 지정한 자원 사용량의 수치를 넘어서게 되면, 사용자 함수의 레플리카 셋을 만든다. 함수 deploy 시, 사용자는 다음과 같이 `--min`, `--max` 옵션을 통해 사용자 함수에 대한 레플리카 셋의 최소값과 최대값을 지정할 수 있다. 
+
+  ```bash
+    $ openfx-cli function deploy -f config.yaml --min 2 --max 4 -v
+  
+    >> 
+    Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
+    ...
+    Deploying: echo ...
+    Attempting update... but Function Not Found. Deploying Function...
+    http trigger url: http://localhost:31113/function/echo
+  ```
+
+  - `default min : 1`, `default max : 1`
 
 - 함수 Initialization 시 `--gateway` 옵션으로 게이트웨이를 설정하였다면 함수 배포 시, 마찬가지로 `--gateway` 옵션을 주어야 한다. 
 
@@ -294,10 +407,9 @@ openfx:
     Pushing: echo, Image: <REGISTRY IP>:<PORT>/<FUNCTION NAME> in Registry: <REGISTRY IP>:<PORT>...
     ...
     Deploying: echo ...
-    Function hpatest-local already exists, attempting rolling-update.
+    Attempting update... but Function Not Found. Deploying Function...
     http trigger url: http://<호스트 OS IP:31113>/function/echo
   ```
-
 
 ## Confirm OpenFx function list
 
@@ -327,7 +439,7 @@ openfx:
 - Kubernetes에 배포된 함수를 호출.
 
   ```bash
-    $ echo "Hello" |openfx-cli function call echo
+    $ echo "Hello" | openfx-cli function call echo
   
     >> 
     Hello
@@ -336,10 +448,12 @@ openfx:
 - 게이트웨이 옵션
 
   ```bash
-    $ echo "Hello" |openfx-cli function call echo --gateway <호스트 OS IP:31113>
+    $ echo "Hello" | openfx-cli function call echo --gateway <호스트 OS IP:31113>
   
     >> 
     Hello
   ```
 
+## Rolling update Function
 
+- Handler 코드 수정 후, [Building Function](#Building Function)부터 순차적으로 진행하면 된다. 
