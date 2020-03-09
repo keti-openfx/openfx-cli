@@ -271,21 +271,11 @@ openfx:
 
     라이브러리 추가시,  `requirements.txt` 에 필요 라이브러리를 명시해야 한다.
 
-    
-
-    다음은 현재 시간을 출력하는 예제이다. 
-       
     ```
+    # datetime 라이브러리 추가
     $ vim requirements.txt
     
     datetime
-    ```
-
-    ```python
-    import datetime 
-    
-    def Handler(req):
-       return datetime.datetime.now()
     ```
   
   - Node Js
@@ -370,7 +360,7 @@ openfx:
     
       <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+        <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
       </PropertyGroup>
       <!-- openfx default installation library. Never modify-->
       <ItemGroup>
