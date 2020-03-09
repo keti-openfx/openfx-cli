@@ -269,36 +269,55 @@ openfx:
         return req.input
     ```
 
-  - Node Js
+    라이브러리 추가시,  `requirements.txt` 에 필요 라이브러리를 명시해야 한다.
 
-    handler.js
-
-    ```js
-    function Handler(argStr) {
-        return argStr;
-    }
     
-    module.exports = Handler;
+
+    다음은 현재 시간을 출력하는 예제이다. 
+  
+    requirements.txt
+  
+    ```
+    datetime
     ```
 
+     ```python
+  import datetime 
+    
+  def Handler(req):
+        return datetime.datetime.now()
+     ```
+  
+  - Node Js
+  
+    handler.js
+  
+    ```js
+    function Handler(argStr) {
+      return argStr;
+    }
+  
+    module.exports = Handler;
+  ```
+  
   - Ruby
-
+  
     handler.rb
-
+  
     ```ruby
     #!/usr/bin/env ruby
     
     module FxWatcher
-      def FxWatcher.Handler(argStr)
+    def FxWatcher.Handler(argStr)
         return argStr
-      end
     end
-    ```
-
+    end
+  ```
+  
   - C++
-
+  
     handler.cc
-
+  
     ```c++
     #include <iostream>
     
@@ -307,12 +326,12 @@ openfx:
     string Handler(const string req) {
       return req;
     }
-    ```
-
-  - Java
-
-    Handler.java
-
+  ```
+  
+- Java
+  
+  Handler.java
+  
     ```java
     package io.grpc.fxwatcher;
     
@@ -326,11 +345,11 @@ openfx:
     
     }
     ```
-
+  
   - C#
-
+  
     handler.cs
-
+  
     ```c#
     namespace Fx
     {
@@ -343,6 +362,35 @@ openfx:
         }
     }
     ```
+  
+    라이브러리 추가시, `fxServer.csproj` 에 필요 라이브러리를 명시애햐한다. 
+  
+    ```xml
+    <Project Sdk="Microsoft.NET.Sdk">
+    
+      <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+      </PropertyGroup>
+      <!-- openfx default installation library. Never modify-->
+      <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.7.0" />
+        <PackageReference Include="Grpc" Version="1.20.1" />
+        <PackageReference Include="Grpc.Tools" Version="1.20.1" />
+      </ItemGroup>
+    
+      <ItemGroup>
+        <Protobuf Include="fxwatcher.proto" Link="fxwatcher.proto"/>
+      </ItemGroup>
+    
+      <!-- Input Server Library.-->
+    
+    </Project>                            
+    ```
+  
+    * Openfx Handler에는 grpc 관련 라이브러리를 설치해야 하므로 위와 같이 명시하였다.  라이브러리 명시시,  `<PackageReference Include="Grpc.Tools" Version="1.20.1" />` 처럼 포매팅이 필요하다.
+  
+      
 
 ## Building Function
 
