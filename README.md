@@ -274,19 +274,19 @@ openfx:
     
 
     다음은 현재 시간을 출력하는 예제이다. 
-  
-    requirements.txt
-  
+       
     ```
+    $ vim requirements.txt
+    
     datetime
     ```
 
-     ```python
-  import datetime 
+    ```python
+    import datetime 
     
-  def Handler(req):
-        return datetime.datetime.now()
-     ```
+    def Handler(req):
+       return datetime.datetime.now()
+    ```
   
   - Node Js
   
@@ -298,7 +298,7 @@ openfx:
     }
   
     module.exports = Handler;
-  ```
+    ```
   
   - Ruby
   
@@ -312,7 +312,7 @@ openfx:
         return argStr
     end
     end
-  ```
+    ```
   
   - C++
   
@@ -326,11 +326,11 @@ openfx:
     string Handler(const string req) {
       return req;
     }
-  ```
+    ```
   
-- Java
+  - Java
   
-  Handler.java
+    Handler.java
   
     ```java
     package io.grpc.fxwatcher;
@@ -363,7 +363,7 @@ openfx:
     }
     ```
   
-    라이브러리 추가시, `fxServer.csproj` 에 필요 라이브러리를 명시애햐한다. 
+    라이브러리 추가시, `fxServer.csproj` 에 필요 라이브러리를 명시해야한다. 
   
     ```xml
     <Project Sdk="Microsoft.NET.Sdk">
