@@ -118,9 +118,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 		Handler:      config.Handler{Dir: handlerDir, Name: r.Handler.Name, File: r.Handler.File},
 		RegistryURL:  config.DefaultRegistry,
 		Image:        config.DefaultRegistry + "/" + functionName,
-		Requests:       &config.FunctionResources{CPU: config.DefaultCPU, Memory: config.DefaultMemory},
+		Limits:      &config.FunctionResources{GPU: config.DefaultGPU},
+                Requests:       &config.FunctionResources{CPU: config.DefaultCPU, Memory: config.DefaultMemory},
 		BuildArgs:    r.BuildArgs,
 		BuildOptions: r.BuildPackages,
+		Constraints:  &config.DefaultConstraints,
 	}
 
 	confYaml, err := yaml.Marshal(&fxServices)

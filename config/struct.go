@@ -13,6 +13,11 @@ const (
 	DefaultRuntimeDir  = "./runtime"
 	DefaultCPU         = "50m"
 	DefaultMemory      = "50Mi"
+	DefaultGPU         = ""	
+)
+
+var (
+	DefaultConstraints = []string{"nodetype=cpunode"}
 )
 
 type Services struct {
